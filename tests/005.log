@@ -1,0 +1,12 @@
+
+---- EXPECTED OUTPUT
+1
+1
+1
+1
+---- ACTUAL OUTPUT
+double free or corruption (out)
+Aborted (core dumped)
+
+Termsig=6
+---- FAILED
