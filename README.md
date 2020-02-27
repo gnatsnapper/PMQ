@@ -3,8 +3,6 @@
 
 PMQ is a php extension for interacting with posix message queues.  Posix message queues are updated alternatives for sysv message queues, i.e. low-latency kernel-based interprocess communication, see examples for typical uses.
 
-@author Piers Hobson [piers@gnatsnapper.com]
-
 ## Install
 
 ```
@@ -19,7 +17,7 @@ $ make && make install
 ```php
 $mq = pmq_open("/myqueue");
 ```
-To follow posix message queue convention the queue name must begin with a forward slash and be up to 255 chars. 
+To follow posix message queue convention the queue name must begin with a forward slash and be up to 255 chars.
 
 ### Send Message
 
@@ -77,7 +75,7 @@ If the queue is full and blocking is set on the connection PMQ::send will block 
 $pmq->send("hello",5);
 ```
 PMQ::send will return false if the timeout is reached.
- 
+
 ### Receive Message
 
 ```php
