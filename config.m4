@@ -75,8 +75,8 @@ if test "$PHP_PMQ" != "no"; then
   dnl
   dnl PHP_SUBST(PMQ_SHARED_LIBADD)
 
-  dnl PHP_CHECK_LIBRARY(rt,mq_open,[PHP_ADD_LIBRARY(rt,,PMQ_EXTRA_LIBADD)])
-  dnl PHP_SUBST(PMQ_EXTRA_LIBADD)
+  PHP_CHECK_LIBRARY(rt,mq_open,[PHP_ADD_LIBRARY(rt,,PMQ_EXTRA_LIBADD)])
+  PHP_SUBST(PMQ_EXTRA_LIBADD)
 
   dnl # In case of no dependencies
   AC_DEFINE(HAVE_PMQ, 1, [ Have pmq support ])
