@@ -1,5 +1,5 @@
 --TEST--
-Open Message Queue
+W Exceptions (OOP)
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
@@ -10,16 +10,28 @@ if (!extension_loaded('pmq')) {
 <?php
 
     $name = '/testqueue'.bin2hex(random_bytes(8));
-    $message = "helloeooopoopoop";
-    $pmq = new PMQ($name,"w+");
+    $message = bin2hex(random_bytes(8));
+    $pmq = new PMQ($name,"r");
+
+    try {
+
     echo $pmq->send($message).PHP_EOL;
-    echo ($pmq->receive() === $message) . PHP_EOL;
+
+    }
+
+    catch (Exception $e)
+
+    {
+
+    echo $e->getMessage() . PHP_EOL;
+
+    }
+
     echo $pmq->close().PHP_EOL;
     echo $pmq->unlink().PHP_EOL;
 
 ?>
 --EXPECT--
-1
-1
+Bad file descriptor
 1
 1

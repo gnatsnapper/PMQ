@@ -8,10 +8,10 @@ if (!extension_loaded('pmq')) {
 ?>
 --FILE--
 <?php
-    
+
     $name = '/testqueue002_'.bin2hex(random_bytes(8));
     $sent_message = bin2hex(random_bytes(8));
-    if(is_int($queue = pmq_open($name,'rwc')))
+    if(is_int($queue = pmq_open($name,'r+')))
     {
         echo 1 . PHP_EOL;
     }
