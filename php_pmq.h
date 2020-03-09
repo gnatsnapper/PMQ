@@ -32,7 +32,7 @@ struct _php_pmq_obj {
 };
 
 PHPAPI int php_pmq_init(php_pmq_obj *pmqobj, char *name, mqd_t queue );
-static inline php_pmq_obj *php_pmq_obj_from_obj(zend_object *obj); 
+static inline php_pmq_obj *php_pmq_obj_from_obj(zend_object *obj);
 static inline php_pmq_obj *php_pmq_obj_from_obj(zend_object *obj) {
 	return (php_pmq_obj*)((char*)(obj) - XtOffsetOf(php_pmq_obj, std));
 }
@@ -45,8 +45,7 @@ ZEND_TSRMLS_CACHE_EXTERN()
 # endif
 
 //Internal functions
-int getMode(const char *input);
-struct mq_attr getDefaultAttr(void);
+int getFlags(const char *input);
 
 #endif	/* PHP_PMQ_H */
 
