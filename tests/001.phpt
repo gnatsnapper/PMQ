@@ -10,7 +10,7 @@ if (!extension_loaded('pmq')) {
 <?php
 
     $name = '/testqueue001_'.bin2hex(random_bytes(8));
-    if(is_int($queue = pmq_open($name,'w+',FALSE)))
+    if(is_int($queue = pmq_open($name,'w+')))
     {
         echo 1 . PHP_EOL;
     }
