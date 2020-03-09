@@ -6,9 +6,6 @@ dnl Make sure that the comment is aligned:
 
 if test "$PHP_PMQ" != "no"; then
 
-    PHP_CHECK_LIBRARY(rt, mq_open, [PHP_ADD_LIBRARY(rt,,PMQ_SHARED_LIBADD)])
     PHP_NEW_EXTENSION(pmq, pmq.c, $ext_shared)
-    PHP_SUBST(PMQ_SHARED_LIBADD)
-
 
 fi
