@@ -1,5 +1,5 @@
 --TEST--
-Open Message Queue
+Test send and receive (c+)
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
@@ -11,7 +11,7 @@ if (!extension_loaded('pmq')) {
 
     $name = '/testqueue'.bin2hex(random_bytes(8));
     $message = "helloeooopoopoop";
-    $pmq = new PMQ($name,"w+");
+    $pmq = new PMQ($name,"c+");
     echo $pmq->send($message).PHP_EOL;
     echo ($pmq->receive() === $message) . PHP_EOL;
     echo $pmq->close().PHP_EOL;

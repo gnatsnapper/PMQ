@@ -1,5 +1,5 @@
 --TEST--
-W Exceptions (OOP)
+Test reading from a write-only queue and exceeding the MSGSIZE limit
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {

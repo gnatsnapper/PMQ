@@ -1,5 +1,5 @@
 --TEST--
-Open Message Queue
+Test pmq_open();
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
@@ -8,16 +8,12 @@ if (!extension_loaded('pmq')) {
 ?>
 --FILE--
 <?php
-
-    $name = '/testqueue001_'.bin2hex(random_bytes(8));
-    if(is_int($queue = pmq_open($name,'w+')))
-    {
-        echo 1 . PHP_EOL;
-    }
-    echo pmq_close($queue) . PHP_EOL;
-    echo pmq_unlink($name) . PHP_EOL;
+print_r(pmq_info());
 ?>
 --EXPECT--
-1
-1
-1
+Array
+(
+    [mq_maxmsg] => 10
+    [mq_msgsize] => 8192
+)
+

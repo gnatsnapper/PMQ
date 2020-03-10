@@ -1,5 +1,5 @@
 --TEST--
-Open Message Queue
+Test send and receive (r+)
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
@@ -9,27 +9,14 @@ if (!extension_loaded('pmq')) {
 --FILE--
 <?php
 
-    $name = '/testqueue004_'.bin2hex(random_bytes(8));
-    $sent_message = bin2hex(random_bytes(8));
-    if(is_int($queue = pmq_open($name,'r+')))
-    {
-        echo 1 . PHP_EOL;
-    }
+    $name = '/testqueue'.bin2hex(random_bytes(8));
+    $message = "helloeooopoopoop";
+    $pmq = new PMQ($name,"c+");
+    echo $pmq->send($message).PHP_EOL;
+    echo ($pmq->receive() === $message) . PHP_EOL;
+    echo $pmq->close().PHP_EOL;
+    echo $pmq->unlink().PHP_EOL;
 
-    while(pmq_send($queue,"test",1))
-    {
-        $s = microtime(TRUE);
-    }
-
-        $d = (microtime(TRUE) - $s);
-        if(($d > 1) && ($d < 1.1))
-        {
-            echo 1 . PHP_EOL;
-        }
-
-
-    echo pmq_close($queue) . PHP_EOL;
-    echo pmq_unlink($name) . PHP_EOL;
 ?>
 --EXPECT--
 1

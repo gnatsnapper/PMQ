@@ -1,5 +1,5 @@
 --TEST--
-RW Exceptions (Procedural)
+Test send and receive (x+)
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
@@ -10,28 +10,16 @@ if (!extension_loaded('pmq')) {
 <?php
 
     $name = '/testqueue'.bin2hex(random_bytes(8));
-    $message = bin2hex(random_bytes(8));
-    $pmq = pmq_open($name,"r");
-
-    try {
-
-    echo pmq_send($pmq,$message).PHP_EOL;
-
-    }
-
-    catch (Exception $e)
-
-    {
-
-    echo $e->getMessage() . PHP_EOL;
-
-    }
-
-    echo pmq_close($pmq) . PHP_EOL;
-    echo pmq_unlink($name) . PHP_EOL;
+    $message = "helloeooopoopoop";
+    $pmq = new PMQ($name,"x+");
+    echo $pmq->send($message).PHP_EOL;
+    echo ($pmq->receive() === $message) . PHP_EOL;
+    echo $pmq->close().PHP_EOL;
+    echo $pmq->unlink().PHP_EOL;
 
 ?>
 --EXPECT--
-Bad file descriptor
+1
+1
 1
 1

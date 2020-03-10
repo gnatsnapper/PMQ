@@ -10,11 +10,6 @@
 extern zend_module_entry pmq_module_entry;
 # define phpext_pmq_ptr &pmq_module_entry
 
-PHP_FUNCTION(pmq_open);
-PHP_FUNCTION(pmq_close);
-PHP_FUNCTION(pmq_unlink);
-PHP_FUNCTION(pmq_send);
-PHP_FUNCTION(pmq_receive);
 PHP_FUNCTION(pmq_info);
 PHP_METHOD(PMQ, __construct);
 PHP_METHOD(PMQ,send);

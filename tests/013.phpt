@@ -1,5 +1,5 @@
 --TEST--
-Queue Attribute Exceptions (OOP)
+Test queue attributes can be set and are valid
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {

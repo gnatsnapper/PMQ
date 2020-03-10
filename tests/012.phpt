@@ -1,5 +1,5 @@
 --TEST--
-Queue Attribute Exceptions (OOP)
+Test opening a queue with exclusive
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
@@ -10,17 +10,11 @@ if (!extension_loaded('pmq')) {
 <?php
 
     $name = '/testqueue'.bin2hex(random_bytes(8));
-    $message  = bin2hex(random_bytes(57));
-    $pmq = pmq_open($name,"wn",0666,3,112);
-
-    echo pmq_send($pmq,"hi") . PHP_EOL;
-    echo pmq_send($pmq,"hi") . PHP_EOL;
-    echo pmq_send($pmq,"hi") . PHP_EOL;
-    if (!pmq_send($pmq,"hi")) { echo 1 . PHP_EOL; }
+    $pmq1 = new PMQ($name,"r");
 
     try {
 
-    pmq_send($pmq,$message);
+    $pmq2 = new PMQ($name,"rx");
 
     }
 
@@ -32,15 +26,11 @@ if (!extension_loaded('pmq')) {
 
     }
 
-    echo pmq_close($pmq) . PHP_EOL;
-    echo pmq_unlink($name) . PHP_EOL;
+    echo $pmq1->close() . PHP_EOL;
+    echo $pmq1->unlink() . PHP_EOL;
 
 ?>
 --EXPECT--
-1
-1
-1
-1
-Message too long
+File exists
 1
 1

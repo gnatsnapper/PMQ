@@ -1,5 +1,5 @@
 --TEST--
-R Exceptions (OOP)
+Test opening a queue with exclusive
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {

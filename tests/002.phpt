@@ -1,5 +1,5 @@
 --TEST--
-Open Message Queue
+Test construct, close, unlink
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
@@ -9,26 +9,12 @@ if (!extension_loaded('pmq')) {
 --FILE--
 <?php
 
-    $name = '/testqueue002_'.bin2hex(random_bytes(8));
-    $sent_message = bin2hex(random_bytes(8));
-    if(is_int($queue = pmq_open($name,'r+')))
-    {
-        echo 1 . PHP_EOL;
-    }
-    if(pmq_send($queue,$sent_message))
-    {
-        echo 1 . PHP_EOL;
-    }
-    if($received_message = pmq_receive($queue))
-    {
-        echo ($sent_message === $received_message) . PHP_EOL;
-    }
-    echo pmq_close($queue) . PHP_EOL;
-    echo pmq_unlink($name) . PHP_EOL;
+    $name = '/testqueue'.bin2hex(random_bytes(8));
+    $pmq = new PMQ($name,"w+");
+    echo $pmq->close().PHP_EOL;
+    echo $pmq->unlink().PHP_EOL;
+
 ?>
 --EXPECT--
-1
-1
-1
 1
 1
