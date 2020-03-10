@@ -6,6 +6,7 @@ dnl Make sure that the comment is aligned:
 
 if test "$PHP_PMQ" != "no"; then
 
+    LDFLAGS="$LDFLAGS -lrt"
     PHP_NEW_EXTENSION(pmq, pmq.c, $ext_shared)
 
 fi
