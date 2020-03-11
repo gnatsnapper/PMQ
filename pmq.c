@@ -123,14 +123,15 @@ PHP_RINIT_FUNCTION(pmq)
  */
 PHP_MINFO_FUNCTION(pmq)
 {
+        //
         char msgsize[sizeof(PMQ_DEF_MSGSIZE) * CHAR_BIT];
         char maxmsg[sizeof(PMQ_DEF_MAXMSG) * CHAR_BIT];
         sprintf(msgsize,"%d",(int)PMQ_DEF_MSGSIZE);
         sprintf(maxmsg,"%d",(int)PMQ_DEF_MAXMSG);
 	php_info_print_table_start();
 	php_info_print_table_row(2, "pmq support", "enabled");
-	php_info_print_table_row(2, "Default Message Size", "8192" );
-	php_info_print_table_row(2, "Default Maximum Message in queue", "10" );
+	php_info_print_table_row(2, "Default Message Size", msgsize );
+	php_info_print_table_row(2, "Default Maximum Message in queue", maxmsg );
 	php_info_print_table_end();
 }
 /* }}} */
