@@ -18,12 +18,12 @@ $ make && make install
 ```php
 $pmq = new PMQ("/myqueue","w+");
 ```
-Flags passed are inspired fopen's format:
+PMQ's flags passed are inspired fopen's format:
 * r - read only
 * w - write only
+* c - write only
 * r+/w+ - read and write
 * x - exclusive (do not create if file exists)
-* e - close on exec
 * n - non-blocking mode
 
 Queue permissions can be set in umask format, maximum messages, message size (bytes) can also be set, according if the users permissions allow:
@@ -83,10 +83,10 @@ Queues not deleted will persist until computer is restarted, so always delete if
 
 ## Troubleshooting
 
-###Bad file descriptor
+### Bad file descriptor
 This occurs where attempting to send to a queue with only read access, or vice versa.
 
-###Function not implemented
+### Function not implemented
 
 If PMQ fails with 'Function not implemented' the kernel module may be disabled.
 On Linux, compile kernel with:
