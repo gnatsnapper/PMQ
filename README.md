@@ -1,4 +1,4 @@
-#PMQ
+PMQ
 ======
 
 PMQ is a php extension for interacting with posix message queues.  Posix message queues are updated alternatives for sysv message queues, i.e. low-latency kernel-based interprocess communication, see examples for typical uses.
@@ -10,7 +10,9 @@ $ phpize
 $ ./configure
 $ make && make install
 ```
+
 ##Usage
+
 ### Create Queue
 
 ```php
@@ -80,10 +82,12 @@ $pmq->unlink();
 Queues not deleted will persist until computer is restarted, so always delete if not needed by another process.
 
 ## Troubleshooting
+
 ###Bad file descriptor
 This occurs where attempting to send to a queue with only read access, or vice versa.
 
 ###Function not implemented
+
 If PMQ fails with 'Function not implemented' the kernel module may be disabled.
 On Linux, compile kernel with:
 
