@@ -51,6 +51,7 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_send, 0)
     ZEND_ARG_INFO(0, message)
     ZEND_ARG_INFO(0, timeout)
+    ZEND_ARG_INFO(0, priority)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_receive, 0)
@@ -105,7 +106,6 @@ PHP_MINIT_FUNCTION(pmq)
 
 /* }}} */
 
-
 /* {{{ PHP_RINIT_FUNCTION
  */
 PHP_RINIT_FUNCTION(pmq)
@@ -118,14 +118,19 @@ PHP_RINIT_FUNCTION(pmq)
 }
 /* }}} */
 
+
 /* {{{ PHP_MINFO_FUNCTION
  */
 PHP_MINFO_FUNCTION(pmq)
 {
+        char msgsize[sizeof(PMQ_DEF_MSGSIZE) * CHAR_BIT];
+        char maxmsg[sizeof(PMQ_DEF_MAXMSG) * CHAR_BIT];
+        sprintf(msgsize,"%d",(int)PMQ_DEF_MSGSIZE);
+        sprintf(maxmsg,"%d",(int)PMQ_DEF_MAXMSG);
 	php_info_print_table_start();
 	php_info_print_table_row(2, "pmq support", "enabled");
-	php_info_print_table_row(2, "Default Message Size", PMQ_DEF_MSGSIZE);
-	php_info_print_table_row(2, "Default Maximum Message in queue", PMQ_DEF_MAXMSG);
+	php_info_print_table_row(2, "Default Message Size", "8192" );
+	php_info_print_table_row(2, "Default Maximum Message in queue", "10" );
 	php_info_print_table_end();
 }
 /* }}} */
@@ -141,7 +146,7 @@ zend_module_entry pmq_module_entry = {
 	PHP_MINIT(pmq),       	/* PHP_MINIT - Module initialization */
 	NULL,			/* PHP_MSHUTDOWN - Module shutdown */
 	PHP_RINIT(pmq),		/* PHP_RINIT - Request initialization */
-	NULL,			/* PHP_RSHUTDOWN - Request shutdown */
+	NULL,	                /* PHP_RSHUTDOWN - Request shutdown */
 	PHP_MINFO(pmq),		/* PHP_MINFO - Module info */
 	PHP_PMQ_VERSION,	/* Version */
 	STANDARD_MODULE_PROPERTIES
@@ -215,20 +220,22 @@ PHP_METHOD(PMQ, __construct)
 }
 /* }}} */
 
-/* {{{ void PMQ::send(string $message [, int $timeout] )
+/* {{{ void PMQ::send(string $message [, int $timeout [, int $priority]] )
  */
 PHP_METHOD(PMQ,send)
 {
    zend_long queue;
+   zend_long priority = 1;
    zend_long timeout = 0;
    zend_string *message;
 
    int retval;
 
-   ZEND_PARSE_PARAMETERS_START(1, 2)
+   ZEND_PARSE_PARAMETERS_START(1, 3)
                 Z_PARAM_STR(message)
                 Z_PARAM_OPTIONAL
                 Z_PARAM_LONG(timeout)
+                Z_PARAM_LONG(priority)
    ZEND_PARSE_PARAMETERS_END();
 
    php_pmq_obj *pmq = Z_PHPPMQ_P(getThis());
@@ -240,13 +247,13 @@ PHP_METHOD(PMQ,send)
    clock_gettime(CLOCK_REALTIME, &ts);
    ts.tv_sec = (time_t)(int)ts.tv_sec + (int)timeout;
 
-   retval = mq_timedsend(pmq->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,1,&ts);
+   retval = mq_timedsend(pmq->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority,&ts);
 
    }
    else
    {
 
-   retval = mq_send(pmq->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,1);
+   retval = mq_send(pmq->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority);
 
    }
 
@@ -272,8 +279,8 @@ PHP_METHOD(PMQ, receive)
 {
    zend_long queue;
    zend_string *msg;
-   char message[8192];
-   size_t len = 8192;
+   char message[PMQ_DEF_MSGSIZE];
+   size_t len = PMQ_DEF_MSGSIZE;
    int retval;
    unsigned int *priority;
    zend_long timeout = 0;
