@@ -266,7 +266,7 @@ PHP_METHOD(PMQ,send)
         }
         else
         {
-        zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+            zend_throw_exception(zend_ce_exception, strerror(errno),  0);
         }
    }
    RETURN_TRUE;
@@ -316,7 +316,7 @@ PHP_METHOD(PMQ, receive)
         }
         else
         {
-        zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+            zend_throw_exception(zend_ce_exception, strerror(errno),  0);
         }
 
    }

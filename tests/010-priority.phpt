@@ -1,5 +1,5 @@
 --TEST--
-Test send and receive (w+)
+Test setting message priority
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
