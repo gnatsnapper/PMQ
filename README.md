@@ -10,66 +10,7 @@ $ phpize
 $ ./configure
 $ make && make install
 ```
-
-## Procedural Functions
-### Create Queue
-
-```php
-$mq = pmq_open("/myqueue","w+");
-```
-To follow posix message queue convention the queue name must begin with a forward slash, contain no further slashes and be less 255 characters.
-
-Flags passed are inspired fopen's format:
-* r - read only
-* w - write only
-* r+/w+ - read and write
-* x - exclusive (do not create if file exists)
-* e - close on exec
-* n - non-blocking mode
-
-Queue permissions can be set in umask format, maximum messages in queue, message size (bytes) can also be set, if the users permissions allow:
-```php
-$mq = pmq_open("/myqueue","w+",0666,10,8192);
-```
-
-### Send Message
-
-```php
-pmq_send($mq,"hello");
-```
-
-If the queue is full and blocking is set on the connection pmq_send will block until there is space on the queue, add a timeout (seconds) to avoid blocking:
-
-```php
-pmq_send($mq,"hello",5);
-```
-The funcion pmq_send will return false if the timeout is reached.
-
-### Receive Message
-
-```php
-echo pmq_receive($mq);
-```
-If there are no messages and blocking is set on the connection pmq_receive will block until there are messages on the queue, add a timeout (seconds) to avoid blocking:
-
-```php
-pmq_receive($mq,5);
-```
-The function pmq_receive will return false if the timeout is reached.
-
-### Close Queue
-
-```php
-echo pmq_close($mq);
-```
-
-### Delete Queue
-
-```php
-echo pmq_unlink($mq);
-```
-
-## Object Orientated
+##Usage
 ### Create Queue
 
 ```php
@@ -82,7 +23,6 @@ Flags passed are inspired fopen's format:
 * x - exclusive (do not create if file exists)
 * e - close on exec
 * n - non-blocking mode
-
 
 Queue permissions can be set in umask format, maximum messages, message size (bytes) can also be set, according if the users permissions allow:
 
@@ -101,7 +41,16 @@ If the queue is full and blocking is set on the connection PMQ::send will block 
 ```php
 $pmq->send("hello",5);
 ```
-PMQ::send will return false if the timeout is reached.
+PMQ::send will return false if the timeout is reached. A value of 0 gives no timeout.
+
+Message priority can also be set, the queue is sorted with messages with greater priority being received first:
+
+```php
+$pmq->send("gooodbye",0,3);
+$pmq->send("hello",0,4);
+```
+In the example above "hello" will be received first".
+
 
 ### Receive Message
 
@@ -128,6 +77,7 @@ $pmq->close();
 ```php
 $pmq->unlink();
 ```
+Queues not deleted will persist until computer is restarted, so always delete if not needed by another process.
 
 ## Troubleshooting
 ###Bad file descriptor
@@ -135,7 +85,7 @@ This occurs where attempting to send to a queue with only read access, or vice v
 
 ###Function not implemented
 If PMQ fails with 'Function not implemented' the kernel module may be disabled.
-On Linux, compile with:
+On Linux, compile kernel with:
 
 ```bash
 CONFIG_POSIX_MQUEUE=Y
