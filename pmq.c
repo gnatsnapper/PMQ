@@ -104,7 +104,36 @@ PHP_METHOD(PMQ,__construct)
 }
 /* }}} */
 
-/* {{{ bool Uring::unlink(  )
+/* {{{ array PMQ::info(  )
+ */
+PHP_METHOD(PMQ,info)
+{
+        php_pmq_obj     *pmqobj;
+        struct mq_attr gAttr;
+        int retval;
+
+	ZEND_PARSE_PARAMETERS_NONE();
+
+        pmqobj = Z_PHPPMQ_P(getThis());
+
+        retval = mq_getattr(pmqobj->queue, &gAttr);
+
+        if(retval == -1)
+        {
+             zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+        }
+
+        array_init(return_value);
+
+        add_assoc_long(return_value, "flags", gAttr.mq_flags);
+        add_assoc_long(return_value, "maxmsg", gAttr.mq_maxmsg);
+        add_assoc_long(return_value, "msgsize", gAttr.mq_msgsize);
+        add_assoc_long(return_value, "curmsgs", gAttr.mq_curmsgs);
+
+}
+/* }}}*/
+
+/* {{{ bool PMQ::unlink(  )
  */
 PHP_METHOD(PMQ,unlink)
 {
@@ -159,6 +188,9 @@ ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_construct, 0)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_info, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_unlink, 0)
 ZEND_END_ARG_INFO()
 /* }}} */
@@ -175,6 +207,7 @@ static const zend_function_entry pmq_functions[] = {
  */
 static const zend_function_entry pmq_methods[] = {
 	PHP_ME(PMQ, __construct,	arginfo_pmq_class_construct, ZEND_ACC_PUBLIC)
+	PHP_ME(PMQ, info,    arginfo_pmq_class_info, ZEND_ACC_PUBLIC)
 	PHP_ME(PMQ, unlink,    arginfo_pmq_class_unlink, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
