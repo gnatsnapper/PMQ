@@ -14,6 +14,8 @@ ZEND_TSRMLS_CACHE_EXTERN()
 
 PHP_FUNCTION(pmq_info);
 PHP_METHOD(PMQ, __construct);
+PHP_METHOD(PMQ, send);
+PHP_METHOD(PMQ, receive);
 PHP_METHOD(PMQ, unlink);
 PHP_METHOD(PMQ, info);
 

@@ -106,6 +106,116 @@ PHP_METHOD(PMQ,__construct)
 
 /* {{{ array PMQ::info(  )
  */
+
+PHP_METHOD(PMQ,send)
+{
+   php_pmq_obj *pmqobj;
+   zend_long priority = 1;
+   zend_long timeout = 0;
+   zend_string *message;
+
+   int retval;
+
+   ZEND_PARSE_PARAMETERS_START(1, 3)
+                Z_PARAM_STR(message)
+                Z_PARAM_OPTIONAL
+                Z_PARAM_LONG(priority)
+                Z_PARAM_LONG(timeout)
+   ZEND_PARSE_PARAMETERS_END();
+
+   pmqobj = Z_PHPPMQ_P(getThis());
+
+   if(timeout > 0)
+   {
+
+   struct timespec ts;
+   clock_gettime(CLOCK_REALTIME, &ts);
+   ts.tv_sec = (time_t)(int)ts.tv_sec + (int)timeout;
+
+   retval = mq_timedsend(pmqobj->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority,&ts);
+
+   }
+   else
+   {
+
+   retval = mq_send(pmqobj->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority);
+
+   }
+
+   if(retval == -1)
+   {
+        if((errno == ETIMEDOUT) || (errno == EAGAIN))
+        {
+            RETURN_FALSE;
+        }
+        else
+        {
+            zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+        }
+   }
+
+   RETURN_TRUE;
+
+}
+
+/* }}} */
+
+/* {{{ string PMQ::receive([ int $timeout ])
+ */
+
+PHP_METHOD(PMQ, receive)
+{
+   php_pmq_obj *pmqobj;
+   zend_string *msg;
+   char message[1024];
+   size_t len = 1024;
+   int retval;
+   unsigned int *priority;
+   zend_long timeout = 0;
+   ZEND_PARSE_PARAMETERS_START(0, 1)
+       Z_PARAM_OPTIONAL
+       Z_PARAM_LONG(timeout)
+   ZEND_PARSE_PARAMETERS_END();
+
+   pmqobj = Z_PHPPMQ_P(getThis());
+
+   if(timeout > 0)
+   {
+
+   struct timespec ts;
+   clock_gettime(CLOCK_REALTIME, &ts);
+   ts.tv_sec = (time_t)(int)ts.tv_sec + (int)timeout;
+
+   retval = mq_timedreceive(pmqobj->queue, message, len, priority ,&ts);
+
+   }
+   else
+   {
+
+   retval = mq_receive(pmqobj->queue, message, len, priority);
+
+   }
+
+   if(retval == -1)
+   {
+        if((errno == ETIMEDOUT) || (errno == EAGAIN))
+        {
+            RETURN_FALSE;
+        }
+        else
+        {
+            zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+        }
+
+   }
+
+   RETURN_STRING(message);
+
+}
+/* }}} */
+
+/* {{{ array PMQ::info(  )
+ */
 PHP_METHOD(PMQ,info)
 {
         php_pmq_obj     *pmqobj;
@@ -188,6 +298,16 @@ ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_construct, 0)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_send, 0)
+    ZEND_ARG_INFO(0, message)
+    ZEND_ARG_INFO(0, priority)
+    ZEND_ARG_INFO(0, timeout)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_receive, 0)
+    ZEND_ARG_INFO(0, timeout)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_info, 0)
 ZEND_END_ARG_INFO()
 
@@ -206,9 +326,11 @@ static const zend_function_entry pmq_functions[] = {
 /* {{{ pmq_methods[]
  */
 static const zend_function_entry pmq_methods[] = {
-	PHP_ME(PMQ, __construct,	arginfo_pmq_class_construct, ZEND_ACC_PUBLIC)
-	PHP_ME(PMQ, info,    arginfo_pmq_class_info, ZEND_ACC_PUBLIC)
-	PHP_ME(PMQ, unlink,    arginfo_pmq_class_unlink, ZEND_ACC_PUBLIC)
+        PHP_ME(PMQ, __construct,	arginfo_pmq_class_construct, ZEND_ACC_PUBLIC)
+	PHP_ME(PMQ, send,               arginfo_pmq_class_send, ZEND_ACC_PUBLIC)
+        PHP_ME(PMQ, receive,            arginfo_pmq_class_receive, ZEND_ACC_PUBLIC)
+	PHP_ME(PMQ, info,               arginfo_pmq_class_info, ZEND_ACC_PUBLIC)
+	PHP_ME(PMQ, unlink,             arginfo_pmq_class_unlink, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
