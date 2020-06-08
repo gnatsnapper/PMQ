@@ -75,36 +75,37 @@ PHP_FUNCTION(pmq_info)
 PHP_METHOD(PMQ,__construct)
 {
         zend_string *name;
-        zend_long mode = 0666;//PMQ_DEF_MODE;
+        zend_long flags = -1;
+        zend_long mode = 0600;//PMQ_DEF_MODE;
         zend_long maxmsg = 10;//PMQ_DEF_MAXMSG;
-        zend_long msgsize = 1024;//PMQ_DEF_MSGSIZE;
-        struct mq_attr mqAttr;
-        int oflag;
+        zend_long msgsize = 8192;//PMQ_DEF_MSGSIZE;
 
-	ZEND_PARSE_PARAMETERS_START(1, 1)
+        mqd_t queue;
+
+	ZEND_PARSE_PARAMETERS_START(1, 5)
 		Z_PARAM_STR(name)
+                Z_PARAM_OPTIONAL
+		Z_PARAM_LONG(flags)
+		Z_PARAM_LONG(mode)
+		Z_PARAM_LONG(maxmsg)
+		Z_PARAM_LONG(msgsize)
 	ZEND_PARSE_PARAMETERS_END();
 
-        mqAttr.mq_maxmsg = (int)maxmsg;
-        mqAttr.mq_msgsize = (int)msgsize;
-        oflag = O_CREAT | O_RDWR;
+        if(flags == -1)
+        {
+            queue = defaultQueue(ZSTR_VAL(name));
+        }
+        else
+        {
+            queue = customQueue(ZSTR_VAL(name), flags, mode, (int)maxmsg, (int)msgsize);
+        }
 
-        mqd_t queue = mq_open(ZSTR_VAL(name), oflag, (mode_t)mode, &mqAttr);
+	php_pmq_initialize(Z_PHPPMQ_P(ZEND_THIS), ZSTR_VAL(name), queue, (int)msgsize);
 
-       if((int)queue == -1)
-       {
-
-            zend_throw_exception(zend_ce_exception, strerror(errno),  0);
-
-       }
-
-
-
-	php_pmq_initialize(Z_PHPPMQ_P(ZEND_THIS), ZSTR_VAL(name), queue);
 }
 /* }}} */
 
-/* {{{ array PMQ::info(  )
+/* {{{ bool PMQ::send( string $message [, int $priority [, int $timeout ]] )
  */
 
 PHP_METHOD(PMQ,send)
@@ -125,25 +126,32 @@ PHP_METHOD(PMQ,send)
 
    pmqobj = Z_PHPPMQ_P(getThis());
 
+   if(ZSTR_LEN(message) > pmqobj->msgsize)
+   {
+        zend_throw_exception(zend_ce_exception, "Message too long",  0);
+        RETURN_FALSE;
+   }
+
    if(timeout > 0)
    {
 
-   struct timespec ts;
-   clock_gettime(CLOCK_REALTIME, &ts);
-   ts.tv_sec = (time_t)(int)ts.tv_sec + (int)timeout;
+       struct timespec ts;
+       clock_gettime(CLOCK_REALTIME, &ts);
+       ts.tv_sec = (time_t)(int)ts.tv_sec + (int)timeout;
 
-   retval = mq_timedsend(pmqobj->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority,&ts);
+       retval = mq_timedsend(pmqobj->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority,&ts);
 
    }
    else
    {
 
-   retval = mq_send(pmqobj->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority);
+       retval = mq_send(pmqobj->queue,ZSTR_VAL(message),ZSTR_LEN(message)+1,(int)priority);
 
    }
 
    if(retval == -1)
    {
+
         if((errno == ETIMEDOUT) || (errno == EAGAIN))
         {
             RETURN_FALSE;
@@ -152,6 +160,7 @@ PHP_METHOD(PMQ,send)
         {
             zend_throw_exception(zend_ce_exception, strerror(errno),  0);
         }
+
    }
 
    RETURN_TRUE;
@@ -166,9 +175,6 @@ PHP_METHOD(PMQ,send)
 PHP_METHOD(PMQ, receive)
 {
    php_pmq_obj *pmqobj;
-   zend_string *msg;
-   char message[1024];
-   size_t len = 1024;
    int retval;
    unsigned int *priority;
    zend_long timeout = 0;
@@ -178,6 +184,7 @@ PHP_METHOD(PMQ, receive)
    ZEND_PARSE_PARAMETERS_END();
 
    pmqobj = Z_PHPPMQ_P(getThis());
+   char message[pmqobj->msgsize];
 
    if(timeout > 0)
    {
@@ -186,18 +193,19 @@ PHP_METHOD(PMQ, receive)
    clock_gettime(CLOCK_REALTIME, &ts);
    ts.tv_sec = (time_t)(int)ts.tv_sec + (int)timeout;
 
-   retval = mq_timedreceive(pmqobj->queue, message, len, priority ,&ts);
+   retval = mq_timedreceive(pmqobj->queue, message, pmqobj->msgsize, priority ,&ts);
 
    }
    else
    {
 
-   retval = mq_receive(pmqobj->queue, message, len, priority);
+   retval = mq_receive(pmqobj->queue, message, pmqobj->msgsize, priority);
 
    }
 
    if(retval == -1)
    {
+
         if((errno == ETIMEDOUT) || (errno == EAGAIN))
         {
             RETURN_FALSE;
@@ -213,6 +221,29 @@ PHP_METHOD(PMQ, receive)
 
 }
 /* }}} */
+
+/* {{{ bool PMQ::close(  )
+ */
+PHP_METHOD(PMQ,close)
+{
+        php_pmq_obj     *pmqobj;
+        int retval;
+
+	ZEND_PARSE_PARAMETERS_NONE();
+
+        pmqobj = Z_PHPPMQ_P(getThis());
+
+        retval = mq_close(pmqobj->queue);
+        if(retval == -1)
+        {
+
+            zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+
+        }
+
+	RETURN_TRUE;
+}
+/* }}}*/
 
 /* {{{ array PMQ::info(  )
  */
@@ -296,6 +327,10 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_construct, 0)
 	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, flags)
+	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, maxmsg)
+	ZEND_ARG_INFO(0, msgsize)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_send, 0)
@@ -309,6 +344,9 @@ ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_receive, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_info, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_close, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_unlink, 0)
@@ -330,6 +368,7 @@ static const zend_function_entry pmq_methods[] = {
 	PHP_ME(PMQ, send,               arginfo_pmq_class_send, ZEND_ACC_PUBLIC)
         PHP_ME(PMQ, receive,            arginfo_pmq_class_receive, ZEND_ACC_PUBLIC)
 	PHP_ME(PMQ, info,               arginfo_pmq_class_info, ZEND_ACC_PUBLIC)
+	PHP_ME(PMQ, close,              arginfo_pmq_class_close, ZEND_ACC_PUBLIC)
 	PHP_ME(PMQ, unlink,             arginfo_pmq_class_unlink, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
@@ -376,6 +415,13 @@ PHP_MINIT_FUNCTION(pmq)
 //	pmq_object_handlers_pmq.get_properties_for = pmq_object_get_properties_for;
 //	pmq_object_handlers_pmq.get_gc = pmq_object_get_gc;
 
+        REGISTER_LONG_CONSTANT("PMQ_CREAT", O_CREAT, CONST_CS | CONST_PERSISTENT);
+        REGISTER_LONG_CONSTANT("PMQ_EXCL", O_EXCL, CONST_CS | CONST_PERSISTENT);
+        REGISTER_LONG_CONSTANT("PMQ_RDONLY", O_RDONLY, CONST_CS | CONST_PERSISTENT);
+        REGISTER_LONG_CONSTANT("PMQ_WRONLY", O_WRONLY, CONST_CS | CONST_PERSISTENT);
+        REGISTER_LONG_CONSTANT("PMQ_RDWR", O_RDWR, CONST_CS | CONST_PERSISTENT);
+        REGISTER_LONG_CONSTANT("PMQ_NONBLOCK", O_NONBLOCK, CONST_CS | CONST_PERSISTENT);
+
 	return SUCCESS;
 
 }
@@ -398,12 +444,60 @@ static zend_object *pmq_object_init(zend_class_entry *ce) /* {{{ */
 
 /* {{{ php_pmq_initialize(*pmqobj, *name)
  */
-PHPAPI int php_pmq_initialize(php_pmq_obj *pmqobj, /*const*/ char *name, mqd_t queue)
+PHPAPI int php_pmq_initialize(php_pmq_obj *pmqobj, /*const*/ char *name, mqd_t queue, int msgsize)
 {
         pmqobj->name = name;
         pmqobj->queue = queue;
+        pmqobj->msgsize = msgsize;
 
 	return 1;
 }
 /* }}} */
 
+mqd_t defaultQueue(char *name)
+{
+
+    mqd_t queue;
+    struct mq_attr mqAttr;
+    mqAttr.mq_maxmsg = 10;    //Linux and FreeBSD defaults
+    mqAttr.mq_msgsize = 8192; //Linux and FreeBSD defaults
+    mode_t mode = 0600;
+
+    if((int)(queue = mq_open(name, O_EXCL | O_CREAT | O_RDWR, mode, &mqAttr)) == -1)
+    {
+
+        if(errno == EEXIST)
+        {
+
+            if((int)(queue = mq_open(name, O_RDWR)) == -1)
+            {
+                zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+            }
+
+        }
+        else
+        {
+            zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+        }
+
+    }
+
+    return queue;
+
+}
+
+mqd_t customQueue(char *name, int flags, mode_t mode, int maxmsg, int maxsize )
+{
+    mqd_t queue;
+    struct mq_attr mqAttr;
+    mqAttr.mq_maxmsg = maxmsg;
+    mqAttr.mq_msgsize = maxsize;
+
+    if((int)(queue = mq_open(name, flags, mode, &mqAttr)) == -1)
+    {
+        zend_throw_exception(zend_ce_exception, strerror(errno),  0);
+    }
+
+    return queue;
+
+}

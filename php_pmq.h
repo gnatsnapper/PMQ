@@ -30,14 +30,19 @@ typedef struct _php_pmq_obj php_pmq_obj;
 struct _php_pmq_obj {
         char *name;
         mqd_t queue;
+        int msgsize;
 	zend_object   std;
 };
 
 static zend_object *pmq_object_init(zend_class_entry *class_type);
-PHPAPI int php_pmq_initialize(php_pmq_obj *pmqobj, char *name, mqd_t queue);
+PHPAPI int php_pmq_initialize(php_pmq_obj *pmqobj, char *name, mqd_t queue, int msgsize);
 static inline php_pmq_obj *php_pmq_obj_from_obj(zend_object *obj) {
 	return (php_pmq_obj*)((char*)(obj) - XtOffsetOf(php_pmq_obj, std));
 }
+
+
+mqd_t defaultQueue(char *name);
+mqd_t customQueue(char *name, int flags, mode_t mode, int maxmsg, int maxsize );
 
 #define Z_PHPPMQ_P(zv)  php_pmq_obj_from_obj(Z_OBJ_P((zv)))
 
