@@ -1,6 +1,8 @@
 PMQ
 ======
 
+[![Build Status](https://travis-ci.org/gnatsnapper/PMQ.svg?branch=master)](https://travis-ci.org/gnatsnapper/PMQ)
+
 PMQ is a php extension for interacting with posix message queues.  Posix message queues are updated alternatives for sysv message queues, i.e. low-latency kernel-based interprocess communication, see examples for typical uses. Tested on PHP7.4 on linux and bsd.
 
 ## Install
@@ -16,20 +18,22 @@ $ make && make install
 ### Create Queue
 
 ```php
-$pmq = new PMQ("/myqueue","w+");
+$pmq = new PMQ("/myqueue");
 ```
-PMQ's flags passed are inspired fopen's format:
-* r - read only
-* w - write only
-* c - write only
-* r+/w+ - read and write
-* x - exclusive (do not create if file exists)
-* n - non-blocking mode
+PMQ with only a queue name will attempt to create a new or join an existing queue with read/write permissions.  As per the standard, queue names must begin with a single forward slash (/) and be less than 255 characters.
+
+PMQ's uses O flags formatting:
+* ```PMQ_RDONLY``` - (```O_RDONLY```) read only
+* ```PMQ_WRONLY``` - (```O_WRONLY```) write only
+* ```PMQ_RDWR``` - (```O_RDWR```) read and write
+* ```PMQ_CREAT``` - (```O_CREAT```) create
+* ```PMQ_EXCL``` - (```O_EXCL```) exclusive (do not create if file exists)
+* ```PMQ_NONBLOCK``` - (```O_NONBLOCK```) non-blocking mode
 
 Queue permissions can be set in umask format, maximum messages, message size (bytes) can also be set, according if the users permissions allow:
 
 ```php
-$pmq = new PMQ("/myqueue","w+",0666,10,8192);
+$pmq = new PMQ("/myqueue", PMQ_CREAT | PMQ_RDWR, 0666, 10, 8192);
 ```
 
 ### Send Message
@@ -38,21 +42,20 @@ $pmq = new PMQ("/myqueue","w+",0666,10,8192);
 $pmq->send("hello");
 ```
 
-If the queue is full and blocking is set on the connection PMQ::send will block until there is space on the queue, add a timeout (seconds) to avoid blocking:
+Message priority can be set, the queue is sorted with messages with greater priority being received first:
 
 ```php
-$pmq->send("hello",5);
-```
-PMQ::send will return false if the timeout is reached. A value of 0 gives no timeout.
-
-Message priority can also be set, the queue is sorted with messages with greater priority being received first:
-
-```php
-$pmq->send("gooodbye",0,3);
-$pmq->send("hello",0,4);
+$pmq->send("gooodbye",3);
+$pmq->send("hello",4);
 ```
 In the example above "hello" will be received first".
 
+If the queue is full and blocking is set (```PMQ_NONBLOCK``` not passed) the connection PMQ::send will block until there is space in the queue, add a timeout (seconds) to avoid blocking:
+
+```php
+$pmq->send("hello",0,5);
+```
+PMQ::send will return false if the timeout is reached. A value of 0 gives no timeout.
 
 ### Receive Message
 
@@ -60,7 +63,8 @@ In the example above "hello" will be received first".
 $pmq->receive();
 ```
 
-If there are no messages and blocking is set on the connection PMQ::receive will block until there are message on the queue, add a timeout (seconds) to avoid blocking:
+If there are no messages and blocking is set (```PMQ_NONBLOCK``` not passed) on the connection PMQ::receive will block until there is a message on the queue, add a timeout (seconds) to avoid blocking:
+
 
 ```php
 $pmq->receive(5);
