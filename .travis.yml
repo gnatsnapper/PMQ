@@ -5,6 +5,8 @@ compiler:
 php:
   - 7.4
 
+dist: bionic
+
 env:
   global:
     - REPORT_EXIT_STATUS=1
