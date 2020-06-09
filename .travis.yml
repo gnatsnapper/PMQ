@@ -1,0 +1,19 @@
+language: php
+compiler:
+  - gcc
+
+php:
+  - 7.4
+
+env:
+  global:
+    - REPORT_EXIT_STATUS=1
+    - ZEND_DONT_UNLOAD_MODULES=1
+
+script:
+  - cd $TRAVIS_BUILD_DIR
+  - phpize
+  - wget -q -O run-tests.php https://raw.githubusercontent.com/php/php-src/master/run-tests.php
+  - ./configure --$CONF
+  - make
+  - php run-tests.php ./run-tests.php -n -q -d "Extension=modules/pmq.so"
