@@ -1,9 +1,11 @@
+[![Build Status](https://travis-ci.org/gnatsnapper/PSHM.svg?branch=master)](https://travis-ci.org/gnatsnapper/PSHM)
+
 PMQ
 ======
 
-[![Build Status](https://travis-ci.org/gnatsnapper/PMQ.svg?branch=master)](https://travis-ci.org/gnatsnapper/PMQ)
-
 PMQ is a php extension for interacting with posix message queues.  Posix message queues are updated alternatives for sysv message queues, i.e. low-latency kernel-based interprocess communication, see examples for typical uses. Tested on PHP7.4 on linux and bsd.
+
+![PMQ Example](img/PMQ.gif)
 
 ## Install
 
