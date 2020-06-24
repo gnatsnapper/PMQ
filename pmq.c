@@ -1,4 +1,4 @@
-/* pmq extension for PHP */
+/* PMQ extension for PHP */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -27,6 +27,7 @@ static zend_object_handlers pmq_object_handlers;
 
 /* {{{ string pmq_info( string $name )
  */
+
 PHP_FUNCTION(pmq_info)
 {
 	zend_string *name;
@@ -68,10 +69,12 @@ PHP_FUNCTION(pmq_info)
     add_assoc_long(return_value, "curmsgs", gAttr.mq_curmsgs);
 
 }
+
 /* }}}*/
 
 /* {{{ void pmq___construct( string $name )
  */
+
 PHP_METHOD(PMQ,__construct)
 {
         zend_string *name;
@@ -103,6 +106,7 @@ PHP_METHOD(PMQ,__construct)
 	php_pmq_initialize(Z_PHPPMQ_P(ZEND_THIS), ZSTR_VAL(name), queue, (int)msgsize);
 
 }
+
 /* }}} */
 
 /* {{{ bool PMQ::send( string $message [, int $priority [, int $timeout ]] )
@@ -220,10 +224,12 @@ PHP_METHOD(PMQ, receive)
    RETURN_STRING(message);
 
 }
+
 /* }}} */
 
 /* {{{ bool PMQ::close(  )
  */
+
 PHP_METHOD(PMQ,close)
 {
         php_pmq_obj     *pmqobj;
@@ -243,10 +249,12 @@ PHP_METHOD(PMQ,close)
 
 	RETURN_TRUE;
 }
+
 /* }}}*/
 
 /* {{{ array PMQ::info(  )
  */
+
 PHP_METHOD(PMQ,info)
 {
         php_pmq_obj     *pmqobj;
@@ -295,10 +303,12 @@ PHP_METHOD(PMQ,unlink)
 
 	RETURN_TRUE;
 }
+
 /* }}}*/
 
 /* {{{ PHP_RINIT_FUNCTION
  */
+
 PHP_RINIT_FUNCTION(pmq)
 {
 #if defined(ZTS) && defined(COMPILE_DL_PMQ)
@@ -307,10 +317,12 @@ PHP_RINIT_FUNCTION(pmq)
 
 	return SUCCESS;
 }
+
 /* }}} */
 
 /* {{{ PHP_MINFO_FUNCTION
  */
+
 PHP_MINFO_FUNCTION(pmq)
 {
 	php_info_print_table_start();
@@ -321,6 +333,7 @@ PHP_MINFO_FUNCTION(pmq)
 
 /* {{{ arginfo
  */
+
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_info, 0)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
@@ -351,18 +364,22 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_pmq_class_unlink, 0)
 ZEND_END_ARG_INFO()
+
 /* }}} */
 
 /* {{{ pmq_functions[]
  */
+
 static const zend_function_entry pmq_functions[] = {
 	PHP_FE(pmq_info,		arginfo_pmq_info)
 	PHP_FE_END
 };
+
 /* }}} */
 
 /* {{{ pmq_methods[]
  */
+
 static const zend_function_entry pmq_methods[] = {
         PHP_ME(PMQ, __construct,	arginfo_pmq_class_construct, ZEND_ACC_PUBLIC)
 	PHP_ME(PMQ, send,               arginfo_pmq_class_send, ZEND_ACC_PUBLIC)
@@ -372,22 +389,25 @@ static const zend_function_entry pmq_methods[] = {
 	PHP_ME(PMQ, unlink,             arginfo_pmq_class_unlink, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
+
 /* }}} */
 
 /* {{{ pmq_module_entry
  */
+
 zend_module_entry pmq_module_entry = {
 	STANDARD_MODULE_HEADER,
-	"pmq",	/* Extension name */
+	"pmq",                    /* Extension name */
         pmq_functions,			/* zend_function_entry */
 	PHP_MINIT(pmq),			/* PHP_MINIT - Module initialization */
-	NULL,					/* PHP_MSHUTDOWN - Module shutdown */
+	NULL,				/* PHP_MSHUTDOWN - Module shutdown */
 	PHP_RINIT(pmq),			/* PHP_RINIT - Request initialization */
-	NULL,					/* PHP_RSHUTDOWN - Request shutdown */
+	NULL,				/* PHP_RSHUTDOWN - Request shutdown */
 	PHP_MINFO(pmq),			/* PHP_MINFO - Module info */
-	PHP_PMQ_VERSION,/* Version */
+	PHP_PMQ_VERSION,                /* Version */
 	STANDARD_MODULE_PROPERTIES
 };
+
 /* }}} */
 
 #ifdef COMPILE_DL_PMQ
@@ -399,6 +419,7 @@ ZEND_GET_MODULE(pmq)
 
 /* {{{ PHP_MINIT_FUNCTION(pmq)
  */
+
 PHP_MINIT_FUNCTION(pmq)
 {
         zend_class_entry ce_pmq;
@@ -407,13 +428,6 @@ PHP_MINIT_FUNCTION(pmq)
 	ce_pmq.create_object = pmq_object_init;
 	pmq_ce = zend_register_internal_class_ex(&ce_pmq, NULL);
 	memcpy(&pmq_object_handlers, &std_object_handlers, sizeof(zend_object_handlers));
-//	pmq_object_handlers_pmq.offset = XtOffsetOf(php_pmq_obj, std);
-//	pmq_object_handlers_pmq.free_obj = pmq_object_free_storage;
-//	pmq_object_handlers_pmq.clone_obj = pmq_object_clone;
-//	pmq_object_handlers_pmq.dtor_obj = pmq_object_destroy;
-//	pmq_object_handlers_pmq.compare_objects = pmq_object_compare;
-//	pmq_object_handlers_pmq.get_properties_for = pmq_object_get_properties_for;
-//	pmq_object_handlers_pmq.get_gc = pmq_object_get_gc;
 
         REGISTER_LONG_CONSTANT("PMQ_CREAT", O_CREAT, CONST_CS | CONST_PERSISTENT);
         REGISTER_LONG_CONSTANT("PMQ_EXCL", O_EXCL, CONST_CS | CONST_PERSISTENT);
@@ -425,6 +439,7 @@ PHP_MINIT_FUNCTION(pmq)
 	return SUCCESS;
 
 }
+
 /* }}} */
 
 /* {{{ pmq_object_init(ce)
@@ -441,9 +456,9 @@ static zend_object *pmq_object_init(zend_class_entry *ce) /* {{{ */
 }
 /* }}} */
 
-
 /* {{{ php_pmq_initialize(*pmqobj, *name)
  */
+
 PHPAPI int php_pmq_initialize(php_pmq_obj *pmqobj, /*const*/ char *name, mqd_t queue, int msgsize)
 {
         pmqobj->name = name;
@@ -452,8 +467,11 @@ PHPAPI int php_pmq_initialize(php_pmq_obj *pmqobj, /*const*/ char *name, mqd_t q
 
 	return 1;
 }
+
 /* }}} */
 
+/* {{{ mqd_t defaultQueue(char *name)
+ */
 mqd_t defaultQueue(char *name)
 {
 
@@ -486,6 +504,10 @@ mqd_t defaultQueue(char *name)
 
 }
 
+/* }}} */
+
+/* {{{ mqd_t customQueue(char *name, int flags, mode_t mode, int maxmsg, int maxsize )
+ */
 mqd_t customQueue(char *name, int flags, mode_t mode, int maxmsg, int maxsize )
 {
     mqd_t queue;
@@ -501,3 +523,5 @@ mqd_t customQueue(char *name, int flags, mode_t mode, int maxmsg, int maxsize )
     return queue;
 
 }
+
+/* }}} */
