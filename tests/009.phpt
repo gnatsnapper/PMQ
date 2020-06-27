@@ -3,7 +3,7 @@ Non-blocking Test
 --SKIPIF--
 <?php
 if (!extension_loaded('pmq')) {
-	 var_dump( 'skip';
+	 print 'skip';
 }
 ?>
 --FILE--
