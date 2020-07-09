@@ -13,7 +13,7 @@ if (!extension_loaded('pcntl')) {
 --FILE--
 <?php
 $name = '/'.bin2hex(random_bytes(8));
-$pmq = new PMQ($name);
+$pmq = new PosixMessageQueue($name);
 
     $pid = pcntl_fork();
     if ($pid == -1) {

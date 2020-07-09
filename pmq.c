@@ -75,7 +75,7 @@ PHP_FUNCTION(pmq_info)
 /* {{{ void pmq___construct( string $name )
  */
 
-PHP_METHOD(PMQ,__construct)
+PHP_METHOD(PosixMessageQueue,__construct)
 {
         zend_string *name;
         zend_long flags = -1;
@@ -112,7 +112,7 @@ PHP_METHOD(PMQ,__construct)
 /* {{{ bool PMQ::send( string $message [, int $priority [, int $timeout ]] )
  */
 
-PHP_METHOD(PMQ,send)
+PHP_METHOD(PosixMessageQueue,send)
 {
    php_pmq_obj *pmqobj;
    zend_long priority = 1;
@@ -176,7 +176,7 @@ PHP_METHOD(PMQ,send)
 /* {{{ string PMQ::receive([ int $timeout ])
  */
 
-PHP_METHOD(PMQ, receive)
+PHP_METHOD(PosixMessageQueue, receive)
 {
    php_pmq_obj *pmqobj;
    int retval;
@@ -230,7 +230,7 @@ PHP_METHOD(PMQ, receive)
 /* {{{ bool PMQ::close(  )
  */
 
-PHP_METHOD(PMQ,close)
+PHP_METHOD(PosixMessageQueue,close)
 {
         php_pmq_obj     *pmqobj;
         int retval;
@@ -255,7 +255,7 @@ PHP_METHOD(PMQ,close)
 /* {{{ array PMQ::info(  )
  */
 
-PHP_METHOD(PMQ,info)
+PHP_METHOD(PosixMessageQueue,info)
 {
         php_pmq_obj     *pmqobj;
         struct mq_attr gAttr;
@@ -284,7 +284,7 @@ PHP_METHOD(PMQ,info)
 
 /* {{{ bool PMQ::unlink(  )
  */
-PHP_METHOD(PMQ,unlink)
+PHP_METHOD(PosixMessageQueue,unlink)
 {
         php_pmq_obj     *pmqobj;
         int retval;
@@ -381,12 +381,12 @@ static const zend_function_entry pmq_functions[] = {
  */
 
 static const zend_function_entry pmq_methods[] = {
-        PHP_ME(PMQ, __construct,	arginfo_pmq_class_construct, ZEND_ACC_PUBLIC)
-	PHP_ME(PMQ, send,               arginfo_pmq_class_send, ZEND_ACC_PUBLIC)
-        PHP_ME(PMQ, receive,            arginfo_pmq_class_receive, ZEND_ACC_PUBLIC)
-	PHP_ME(PMQ, info,               arginfo_pmq_class_info, ZEND_ACC_PUBLIC)
-	PHP_ME(PMQ, close,              arginfo_pmq_class_close, ZEND_ACC_PUBLIC)
-	PHP_ME(PMQ, unlink,             arginfo_pmq_class_unlink, ZEND_ACC_PUBLIC)
+        PHP_ME(PosixMessageQueue, __construct,	arginfo_pmq_class_construct, ZEND_ACC_PUBLIC)
+	PHP_ME(PosixMessageQueue, send,               arginfo_pmq_class_send, ZEND_ACC_PUBLIC)
+        PHP_ME(PosixMessageQueue, receive,            arginfo_pmq_class_receive, ZEND_ACC_PUBLIC)
+	PHP_ME(PosixMessageQueue, info,               arginfo_pmq_class_info, ZEND_ACC_PUBLIC)
+	PHP_ME(PosixMessageQueue, close,              arginfo_pmq_class_close, ZEND_ACC_PUBLIC)
+	PHP_ME(PosixMessageQueue, unlink,             arginfo_pmq_class_unlink, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -424,7 +424,7 @@ PHP_MINIT_FUNCTION(pmq)
 {
         zend_class_entry ce_pmq;
 
-        INIT_CLASS_ENTRY(ce_pmq, "PMQ", pmq_methods);
+        INIT_CLASS_ENTRY(ce_pmq, "PosixMessageQueue", pmq_methods);
 	ce_pmq.create_object = pmq_object_init;
 	pmq_ce = zend_register_internal_class_ex(&ce_pmq, NULL);
 	memcpy(&pmq_object_handlers, &std_object_handlers, sizeof(zend_object_handlers));

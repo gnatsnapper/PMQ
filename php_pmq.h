@@ -13,11 +13,11 @@ ZEND_TSRMLS_CACHE_EXTERN()
 # endif
 
 PHP_FUNCTION(pmq_info);
-PHP_METHOD(PMQ, __construct);
-PHP_METHOD(PMQ, send);
-PHP_METHOD(PMQ, receive);
-PHP_METHOD(PMQ, unlink);
-PHP_METHOD(PMQ, info);
+PHP_METHOD(PosixMessageQueue, __construct);
+PHP_METHOD(PosixMessageQueue, send);
+PHP_METHOD(PosixMessageQueue, receive);
+PHP_METHOD(PosixMessageQueue, unlink);
+PHP_METHOD(PosixMessageQueue, info);
 
 PHP_RINIT_FUNCTION(pmq);
 PHP_RSHUTDOWN_FUNCTION(pmq);

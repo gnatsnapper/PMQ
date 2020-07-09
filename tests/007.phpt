@@ -9,8 +9,8 @@ if (!extension_loaded('pmq')) {
 --FILE--
 <?php
 $name = '/testqueue' . bin2hex( random_bytes(8) );
-$pmq1 = new PMQ($name,PMQ_CREAT|PMQ_WRONLY,0);
-try { var_dump( $pmq2 = new PMQ($name,PMQ_CREAT|PMQ_WRONLY,0) ); }
+$pmq1 = new PosixMessageQueue($name,PMQ_CREAT|PMQ_WRONLY,0);
+try { var_dump( $pmq2 = new PosixMessageQueue($name,PMQ_CREAT|PMQ_WRONLY,0) ); }
 catch (Exception $e)
     {
         var_dump( $e->getMessage() );

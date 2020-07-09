@@ -9,7 +9,7 @@ if (!extension_loaded('pmq')) {
 --FILE--
 <?php
 $name = '/testqueue' . bin2hex( random_bytes(8) );
-$pmq = new PMQ($name,PMQ_CREAT|PMQ_WRONLY,0600,2,1024);
+$pmq = new PosixMessageQueue($name,PMQ_CREAT|PMQ_WRONLY,0600,2,1024);
 var_dump( $pmq->info() );
 var_dump( $pmq->unlink() );
 ?>
