@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/gnatsnapper/PSHM.svg?branch=master)](https://travis-ci.org/gnatsnapper/PSHM)
+[![Build Status](https://travis-ci.org/gnatsnapper/PosixMessageQueue.svg?branch=master)](https://travis-ci.org/gnatsnapper/PosixMessageQueue)
 
 PosixMessageQueue
 ======
